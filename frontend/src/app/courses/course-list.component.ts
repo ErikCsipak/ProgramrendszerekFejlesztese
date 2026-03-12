@@ -8,56 +8,58 @@ import { Course } from '../shared/models/course.model';
     imports: [CommonModule, RouterModule],
     template: `
     <div class="course-list-container">
-      <div *ngIf="courses.length === 0" class="no-courses">
-        {{ emptyMessage }}
-      </div>
-
-      <div *ngIf="courses.length > 0" class="courses-grid">
-        <div *ngFor="let course of courses" class="course-card">
-          <div class="course-card-header">
-            <h3>{{ course.name }}</h3>
-            <span class="badge" [ngClass]="'badge-' + course.status.toLowerCase()">
-              {{ course.status }}
-            </span>
-          </div>
-
-          <div class="course-card-body">
-            <p class="description">{{ course.description || 'No description' }}</p>
-
-            <div class="course-meta">
-              <div class="meta-item">
-                <span class="label">Students:</span>
-                <span class="value">{{ course.currentEnrollment }} / {{ course.maxStudents }}</span>
-              </div>
-
-              <div class="meta-item">
-                <span class="label">Status:</span>
-                <span class="value">{{ course.status }}</span>
-              </div>
-            </div>
-
-            <div class="progress-bar">
-              <div class="progress" [style.width.%]="(course.currentEnrollment / course.maxStudents) * 100"></div>
-            </div>
-          </div>
-
-          <div class="course-card-footer">
-            <button class="btn-small" [routerLink]="['/courses', course.id]">
-              View Details
-            </button>
-            <button
-              *ngIf="showActionButton"
-              class="btn-small primary"
-              (click)="onAction(course)"
-              [disabled]="isActionDisabled(course)"
-            >
-              {{ getActionButtonText(course) }}
-            </button>
-          </div>
+      @if (courses.length === 0) {
+        <div class="no-courses">
+          {{ emptyMessage }}
         </div>
-      </div>
+      }
+    
+      @if (courses.length > 0) {
+        <div class="courses-grid">
+          @for (course of courses; track course) {
+            <div class="course-card">
+              <div class="course-card-header">
+                <h3>{{ course.name }}</h3>
+                <span class="badge" [ngClass]="'badge-' + course.status.toLowerCase()">
+                  {{ course.status }}
+                </span>
+              </div>
+              <div class="course-card-body">
+                <p class="description">{{ course.description || 'No description' }}</p>
+                <div class="course-meta">
+                  <div class="meta-item">
+                    <span class="label">Students:</span>
+                    <span class="value">{{ course.currentEnrollment }} / {{ course.maxStudents }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="label">Status:</span>
+                    <span class="value">{{ course.status }}</span>
+                  </div>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress" [style.width.%]="(course.currentEnrollment / course.maxStudents) * 100"></div>
+                </div>
+              </div>
+              <div class="course-card-footer">
+                <button class="btn-small" [routerLink]="['/courses', course.id]">
+                  View Details
+                </button>
+                @if (showActionButton) {
+                  <button
+                    class="btn-small primary"
+                    (click)="onAction(course)"
+                    [disabled]="isActionDisabled(course)"
+                    >
+                    {{ getActionButtonText(course) }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
     </div>
-  `,
+    `,
     styles: [`
     .course-list-container {
       padding: 20px;

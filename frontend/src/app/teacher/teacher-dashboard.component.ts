@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Course } from '../shared/models/course.model';
@@ -8,7 +8,7 @@ import { CourseListComponent } from '../courses/course-list.component';
 
 @Component({
     selector: 'app-teacher-dashboard',
-    imports: [CommonModule, RouterModule, FormsModule, CourseListComponent],
+    imports: [RouterModule, FormsModule, CourseListComponent],
     template: `
     <div class="teacher-dashboard">
       <div class="header">
@@ -18,127 +18,137 @@ import { CourseListComponent } from '../courses/course-list.component';
           {{ showNewCourseForm ? 'Cancel' : 'Create New Course' }}
         </button>
       </div>
-
+    
       <!-- Create Course Form -->
-      <div *ngIf="showNewCourseForm" class="new-course-form card">
-        <div class="form-title">Create New Course</div>
-
-        <div class="form-group">
-          <label for="courseName">Course Name</label>
-          <input
-            type="text"
-            id="courseName"
-            [(ngModel)]="newCourse.name"
-            placeholder="Enter course name"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="courseDesc">Description</label>
-          <textarea
-            id="courseDesc"
-            [(ngModel)]="newCourse.description"
-            placeholder="Enter course description"
-            rows="4"
-          ></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="maxStudents">Max Students</label>
-          <input
-            type="number"
-            id="maxStudents"
-            [(ngModel)]="newCourse.maxStudents"
-            min="1"
-            placeholder="Maximum number of students"
-          />
-        </div>
-
-        <div class="form-group">
-          <label>Course Schedules</label>
-          <div *ngFor="let schedule of newCourse.schedules; let i = index" class="schedule-input">
+      @if (showNewCourseForm) {
+        <div class="new-course-form card">
+          <div class="form-title">Create New Course</div>
+          <div class="form-group">
+            <label for="courseName">Course Name</label>
             <input
               type="text"
-              [(ngModel)]="schedule.dayOfWeek"
-              placeholder="Day (e.g., Monday)"
-            />
-            <input
-              type="time"
-              [(ngModel)]="schedule.startTime"
-            />
-            <input
-              type="time"
-              [(ngModel)]="schedule.endTime"
-            />
-            <input
-              type="text"
-              [(ngModel)]="schedule.location"
-              placeholder="Location"
-            />
-            <button type="button" class="btn-remove" (click)="removeSchedule(i)">Remove</button>
+              id="courseName"
+              [(ngModel)]="newCourse.name"
+              placeholder="Enter course name"
+              />
           </div>
-          <button type="button" class="btn-secondary" (click)="addSchedule()">Add Schedule</button>
+          <div class="form-group">
+            <label for="courseDesc">Description</label>
+            <textarea
+              id="courseDesc"
+              [(ngModel)]="newCourse.description"
+              placeholder="Enter course description"
+              rows="4"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="maxStudents">Max Students</label>
+            <input
+              type="number"
+              id="maxStudents"
+              [(ngModel)]="newCourse.maxStudents"
+              min="1"
+              placeholder="Maximum number of students"
+              />
+          </div>
+          <div class="form-group">
+            <label>Course Schedules</label>
+            @for (schedule of newCourse.schedules; track schedule; let i = $index) {
+              <div class="schedule-input">
+                <input
+                  type="text"
+                  [(ngModel)]="schedule.dayOfWeek"
+                  placeholder="Day (e.g., Monday)"
+                  />
+                <input
+                  type="time"
+                  [(ngModel)]="schedule.startTime"
+                  />
+                <input
+                  type="time"
+                  [(ngModel)]="schedule.endTime"
+                  />
+                <input
+                  type="text"
+                  [(ngModel)]="schedule.location"
+                  placeholder="Location"
+                  />
+                <button type="button" class="btn-remove" (click)="removeSchedule(i)">Remove</button>
+              </div>
+            }
+            <button type="button" class="btn-secondary" (click)="addSchedule()">Add Schedule</button>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" (click)="createCourse()" [disabled]="creatingCourse">
+              {{ creatingCourse ? 'Creating...' : 'Create Course' }}
+            </button>
+            <button class="btn-secondary" (click)="toggleNewCourseForm()">Cancel</button>
+          </div>
+          @if (formError) {
+            <div class="alert alert-error">
+              {{ formError }}
+            </div>
+          }
         </div>
-
-        <div class="form-actions">
-          <button class="btn-primary" (click)="createCourse()" [disabled]="creatingCourse">
-            {{ creatingCourse ? 'Creating...' : 'Create Course' }}
-          </button>
-          <button class="btn-secondary" (click)="toggleNewCourseForm()">Cancel</button>
-        </div>
-
-        <div *ngIf="formError" class="alert alert-error">
-          {{ formError }}
-        </div>
-      </div>
-
+      }
+    
       <!-- Courses List -->
       <div class="courses-section">
         <h2>Your Courses</h2>
-
-        <div *ngIf="loading" class="loading">Loading your courses...</div>
-        <div *ngIf="!loading && error" class="alert alert-error">
-          {{ error }}
-        </div>
-
-        <div *ngIf="!loading && courses.length === 0" class="no-courses">
-          You haven't created any courses yet
-        </div>
-
-        <div *ngIf="!loading && courses.length > 0" class="courses-list">
-          <div *ngFor="let course of courses" class="course-item">
-            <div class="course-info">
-              <h3>{{ course.name }}</h3>
-              <p>{{ course.description }}</p>
-              <div class="course-stats">
-                <span>Status: <strong>{{ course.status }}</strong></span>
-                <span>Students: <strong>{{ course.currentEnrollment }} / {{ course.maxStudents }}</strong></span>
-              </div>
-            </div>
-
-            <div class="course-actions">
-              <button class="btn-small" [routerLink]="['/courses', course.id]">
-                View Details
-              </button>
-              <button
-                *ngIf="course.status === 'IN_PLAN'"
-                class="btn-small"
-                (click)="editCourse(course)"
-              >
-                Edit
-              </button>
-              <button
-                class="btn-small danger"
-                (click)="deleteCourse(course.id)"
-              >
-                Delete
-              </button>
-            </div>
+    
+        @if (loading) {
+          <div class="loading">Loading your courses...</div>
+        }
+        @if (!loading && error) {
+          <div class="alert alert-error">
+            {{ error }}
           </div>
-        </div>
+        }
+    
+        @if (!loading && courses.length === 0) {
+          <div class="no-courses">
+            You haven't created any courses yet
+          </div>
+        }
+    
+        @if (!loading && courses.length > 0) {
+          <div class="courses-list">
+            @for (course of courses; track course) {
+              <div class="course-item">
+                <div class="course-info">
+                  <h3>{{ course.name }}</h3>
+                  <p>{{ course.description }}</p>
+                  <div class="course-stats">
+                    <span>Status: <strong>{{ course.status }}</strong></span>
+                    <span>Students: <strong>{{ course.currentEnrollment }} / {{ course.maxStudents }}</strong></span>
+                  </div>
+                </div>
+                <div class="course-actions">
+                  <button class="btn-small" [routerLink]="['/courses', course.id]">
+                    View Details
+                  </button>
+                  @if (course.status === 'IN_PLAN') {
+                    <button
+                      class="btn-small"
+                      (click)="editCourse(course)"
+                      >
+                      Edit
+                    </button>
+                  }
+                  <button
+                    class="btn-small danger"
+                    (click)="deleteCourse(course.id)"
+                    >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
       </div>
     </div>
-  `,
+    `,
     styles: [`
     .teacher-dashboard {
       padding: 20px;

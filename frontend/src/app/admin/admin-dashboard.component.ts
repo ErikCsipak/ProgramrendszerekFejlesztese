@@ -17,170 +17,187 @@ import { CourseListComponent } from '../courses/course-list.component';
         <h1>Admin Dashboard</h1>
         <p>Manage courses and users</p>
       </div>
-
+    
       <!-- Tabs for Admin Functions -->
       <div class="tabs">
-        <button
-          *ngFor="let tab of ['courses', 'users']"
-          [class.active]="activeTab === tab"
-          (click)="activeTab = tab"
-          class="tab-btn"
-        >
-          {{ tab === 'courses' ? 'Pending Courses' : 'Users' }}
-        </button>
-      </div>
-
-      <!-- Pending Courses Tab -->
-      <div *ngIf="activeTab === 'courses'" class="tab-content card">
-        <h2>Pending Course Approvals</h2>
-
-        <div *ngIf="loadingCourses" class="loading">Loading pending courses...</div>
-        <div *ngIf="!loadingCourses && errorCourses" class="alert alert-error">
-          {{ errorCourses }}
-        </div>
-
-        <div *ngIf="!loadingCourses && pendingCourses.length === 0" class="no-data">
-          No pending courses
-        </div>
-
-        <div *ngIf="!loadingCourses && pendingCourses.length > 0" class="courses-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Course Name</th>
-                <th>Teacher</th>
-                <th>Max Students</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let course of pendingCourses">
-                <td><strong>{{ course.name }}</strong></td>
-                <td>{{ getTeacherName(course.teacherId) }}</td>
-                <td>{{ course.maxStudents }}</td>
-                <td>{{ course.createdAt | date: 'short' }}</td>
-                <td>
-                  <div class="action-buttons">
-                    <button
-                      class="btn-approve"
-                      (click)="approveCourse(course.id)"
-                      [disabled]="approvingCourseId === course.id"
-                    >
-                      {{ approvingCourseId === course.id ? 'Approving...' : 'Approve' }}
-                    </button>
-                    <button
-                      class="btn-reject"
-                      (click)="rejectCourse(course.id)"
-                      [disabled]="rejectingCourseId === course.id"
-                    >
-                      {{ rejectingCourseId === course.id ? 'Rejecting...' : 'Reject' }}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Users Tab -->
-      <div *ngIf="activeTab === 'users'" class="tab-content card">
-        <div class="users-header">
-          <h2>User Management</h2>
-          <button class="btn-primary" (click)="toggleNewUserForm()">
-            {{ showNewUserForm ? 'Cancel' : 'Create User' }}
+        @for (tab of ['courses', 'users']; track tab) {
+          <button
+            [class.active]="activeTab === tab"
+            (click)="activeTab = tab"
+            class="tab-btn"
+            >
+            {{ tab === 'courses' ? 'Pending Courses' : 'Users' }}
           </button>
+        }
+      </div>
+    
+      <!-- Pending Courses Tab -->
+      @if (activeTab === 'courses') {
+        <div class="tab-content card">
+          <h2>Pending Course Approvals</h2>
+          @if (loadingCourses) {
+            <div class="loading">Loading pending courses...</div>
+          }
+          @if (!loadingCourses && errorCourses) {
+            <div class="alert alert-error">
+              {{ errorCourses }}
+            </div>
+          }
+          @if (!loadingCourses && pendingCourses.length === 0) {
+            <div class="no-data">
+              No pending courses
+            </div>
+          }
+          @if (!loadingCourses && pendingCourses.length > 0) {
+            <div class="courses-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Course Name</th>
+                    <th>Teacher</th>
+                    <th>Max Students</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (course of pendingCourses; track course) {
+                    <tr>
+                      <td><strong>{{ course.name }}</strong></td>
+                      <td>{{ getTeacherName(course.teacherId) }}</td>
+                      <td>{{ course.maxStudents }}</td>
+                      <td>{{ course.createdAt | date: 'short' }}</td>
+                      <td>
+                        <div class="action-buttons">
+                          <button
+                            class="btn-approve"
+                            (click)="approveCourse(course.id)"
+                            [disabled]="approvingCourseId === course.id"
+                            >
+                            {{ approvingCourseId === course.id ? 'Approving...' : 'Approve' }}
+                          </button>
+                          <button
+                            class="btn-reject"
+                            (click)="rejectCourse(course.id)"
+                            [disabled]="rejectingCourseId === course.id"
+                            >
+                            {{ rejectingCourseId === course.id ? 'Rejecting...' : 'Reject' }}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
         </div>
-
-        <!-- Create User Form -->
-        <div *ngIf="showNewUserForm" class="new-user-form">
-          <div class="form-title">Create New User</div>
-
-          <div class="form-group">
-            <label for="userEmail">Email</label>
-            <input
-              type="email"
-              id="userEmail"
-              [(ngModel)]="newUser.email"
-              placeholder="Enter email"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="userFullName">Full Name</label>
-            <input
-              type="text"
-              id="userFullName"
-              [(ngModel)]="newUser.fullName"
-              placeholder="Enter full name"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="userPassword">Password</label>
-            <input
-              type="password"
-              id="userPassword"
-              [(ngModel)]="newUser.password"
-              placeholder="Enter password"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="userRole">Role</label>
-            <select id="userRole" [(ngModel)]="newUser.role">
-              <option value="">Select Role</option>
-              <option value="ADMIN">Admin</option>
-              <option value="TEACHER">Teacher</option>
-            </select>
-          </div>
-
-          <div class="form-actions">
-            <button class="btn-primary" (click)="createUser()" [disabled]="creatingUser">
-              {{ creatingUser ? 'Creating...' : 'Create User' }}
+      }
+    
+      <!-- Users Tab -->
+      @if (activeTab === 'users') {
+        <div class="tab-content card">
+          <div class="users-header">
+            <h2>User Management</h2>
+            <button class="btn-primary" (click)="toggleNewUserForm()">
+              {{ showNewUserForm ? 'Cancel' : 'Create User' }}
             </button>
-            <button class="btn-secondary" (click)="toggleNewUserForm()">Cancel</button>
           </div>
-
-          <div *ngIf="userFormError" class="alert alert-error">
-            {{ userFormError }}
-          </div>
+          <!-- Create User Form -->
+          @if (showNewUserForm) {
+            <div class="new-user-form">
+              <div class="form-title">Create New User</div>
+              <div class="form-group">
+                <label for="userEmail">Email</label>
+                <input
+                  type="email"
+                  id="userEmail"
+                  [(ngModel)]="newUser.email"
+                  placeholder="Enter email"
+                  />
+              </div>
+              <div class="form-group">
+                <label for="userFullName">Full Name</label>
+                <input
+                  type="text"
+                  id="userFullName"
+                  [(ngModel)]="newUser.fullName"
+                  placeholder="Enter full name"
+                  />
+              </div>
+              <div class="form-group">
+                <label for="userPassword">Password</label>
+                <input
+                  type="password"
+                  id="userPassword"
+                  [(ngModel)]="newUser.password"
+                  placeholder="Enter password"
+                  />
+              </div>
+              <div class="form-group">
+                <label for="userRole">Role</label>
+                <select id="userRole" [(ngModel)]="newUser.role">
+                  <option value="">Select Role</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="TEACHER">Teacher</option>
+                </select>
+              </div>
+              <div class="form-actions">
+                <button class="btn-primary" (click)="createUser()" [disabled]="creatingUser">
+                  {{ creatingUser ? 'Creating...' : 'Create User' }}
+                </button>
+                <button class="btn-secondary" (click)="toggleNewUserForm()">Cancel</button>
+              </div>
+              @if (userFormError) {
+                <div class="alert alert-error">
+                  {{ userFormError }}
+                </div>
+              }
+            </div>
+          }
+          <!-- Users List -->
+          @if (loadingUsers) {
+            <div class="loading">Loading users...</div>
+          }
+          @if (!loadingUsers && errorUsers) {
+            <div class="alert alert-error">
+              {{ errorUsers }}
+            </div>
+          }
+          @if (!loadingUsers && users.length > 0) {
+            <div class="users-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Full Name</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (user of users; track user) {
+                    <tr>
+                      <td>{{ user.email }}</td>
+                      <td>{{ user.fullName }}</td>
+                      <td><span class="badge" [ngClass]="'badge-' + user.role.toLowerCase()">{{ user.role }}</span></td>
+                      <td>{{ user.active ? 'Active' : 'Inactive' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
         </div>
-
-        <!-- Users List -->
-        <div *ngIf="loadingUsers" class="loading">Loading users...</div>
-        <div *ngIf="!loadingUsers && errorUsers" class="alert alert-error">
-          {{ errorUsers }}
+      }
+    
+      @if (successMessage) {
+        <div class="alert alert-success">
+          {{ successMessage }}
         </div>
-
-        <div *ngIf="!loadingUsers && users.length > 0" class="users-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Email</th>
-                <th>Full Name</th>
-                <th>Role</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let user of users">
-                <td>{{ user.email }}</td>
-                <td>{{ user.fullName }}</td>
-                <td><span class="badge" [ngClass]="'badge-' + user.role.toLowerCase()">{{ user.role }}</span></td>
-                <td>{{ user.active ? 'Active' : 'Inactive' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div *ngIf="successMessage" class="alert alert-success">
-        {{ successMessage }}
-      </div>
+      }
     </div>
-  `,
+    `,
     styles: [`
     .admin-dashboard {
       padding: 20px;

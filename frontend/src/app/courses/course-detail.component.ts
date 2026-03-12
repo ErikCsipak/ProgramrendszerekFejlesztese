@@ -9,65 +9,71 @@ import { CourseService } from './course.service';
     imports: [CommonModule, RouterModule],
     template: `
     <div class="course-detail-container">
-      <div *ngIf="loading" class="loading">Loading course details...</div>
-
-      <div *ngIf="!loading && course" class="card">
-        <div class="card-header">
-          <h2>{{ course.name }}</h2>
-          <span class="badge" [ngClass]="'badge-' + course.status.toLowerCase()">
-            {{ course.status }}
-          </span>
-        </div>
-
-        <div class="course-info">
-          <div class="info-row">
-            <label>Description:</label>
-            <p>{{ course.description || 'No description provided' }}</p>
+      @if (loading) {
+        <div class="loading">Loading course details...</div>
+      }
+    
+      @if (!loading && course) {
+        <div class="card">
+          <div class="card-header">
+            <h2>{{ course.name }}</h2>
+            <span class="badge" [ngClass]="'badge-' + course.status.toLowerCase()">
+              {{ course.status }}
+            </span>
           </div>
-
-          <div class="info-row">
-            <label>Max Students:</label>
-            <p>{{ course.maxStudents }}</p>
-          </div>
-
-          <div class="info-row">
-            <label>Current Enrollment:</label>
-            <p>{{ course.currentEnrollment }} / {{ course.maxStudents }}</p>
-          </div>
-
-          <div class="progress-bar">
-            <div class="progress" [style.width.%]="(course.currentEnrollment / course.maxStudents) * 100"></div>
-          </div>
-
-          <div *ngIf="course.schedules && course.schedules.length > 0" class="info-row">
-            <label>Schedule:</label>
-            <div class="schedules">
-              <div *ngFor="let schedule of course.schedules" class="schedule-item">
-                <strong>{{ schedule.dayOfWeek }}</strong> - {{ schedule.startTime }} to {{ schedule.endTime }}
-                <span *ngIf="schedule.location"> @ {{ schedule.location }}</span>
-              </div>
+          <div class="course-info">
+            <div class="info-row">
+              <label>Description:</label>
+              <p>{{ course.description || 'No description provided' }}</p>
             </div>
+            <div class="info-row">
+              <label>Max Students:</label>
+              <p>{{ course.maxStudents }}</p>
+            </div>
+            <div class="info-row">
+              <label>Current Enrollment:</label>
+              <p>{{ course.currentEnrollment }} / {{ course.maxStudents }}</p>
+            </div>
+            <div class="progress-bar">
+              <div class="progress" [style.width.%]="(course.currentEnrollment / course.maxStudents) * 100"></div>
+            </div>
+            @if (course.schedules && course.schedules.length > 0) {
+              <div class="info-row">
+                <label>Schedule:</label>
+                <div class="schedules">
+                  @for (schedule of course.schedules; track schedule) {
+                    <div class="schedule-item">
+                      <strong>{{ schedule.dayOfWeek }}</strong> - {{ schedule.startTime }} to {{ schedule.endTime }}
+                      @if (schedule.location) {
+                        <span> @ {{ schedule.location }}</span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+            <div class="info-row">
+              <label>Created:</label>
+              <p>{{ course.createdAt | date: 'short' }}</p>
+            </div>
+            @if (course.status === 'APPROVED') {
+              <div class="info-row">
+                <label>Approved On:</label>
+                <p>{{ course.approvedAt | date: 'short' }}</p>
+              </div>
+            }
           </div>
-
-          <div class="info-row">
-            <label>Created:</label>
-            <p>{{ course.createdAt | date: 'short' }}</p>
-          </div>
-
-          <div *ngIf="course.status === 'APPROVED'" class="info-row">
-            <label>Approved On:</label>
-            <p>{{ course.approvedAt | date: 'short' }}</p>
-          </div>
+          <ng-content></ng-content>
         </div>
-
-        <ng-content></ng-content>
-      </div>
-
-      <div *ngIf="!loading && !course" class="alert alert-error">
-        Course not found
-      </div>
+      }
+    
+      @if (!loading && !course) {
+        <div class="alert alert-error">
+          Course not found
+        </div>
+      }
     </div>
-  `,
+    `,
     styles: [`
     .course-detail-container {
       padding: 20px;

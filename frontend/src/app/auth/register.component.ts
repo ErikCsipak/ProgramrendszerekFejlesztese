@@ -1,26 +1,30 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../auth.service';
 
 @Component({
     selector: 'app-register',
-    imports: [CommonModule, FormsModule, RouterModule],
+    imports: [FormsModule, RouterModule],
     template: `
     <div class="register-container">
       <div class="register-box">
         <h2>Course Management System</h2>
         <h3>Register</h3>
-
-        <div *ngIf="successMessage" class="alert alert-success">
-          {{ successMessage }}
-        </div>
-
-        <div *ngIf="errorMessage" class="alert alert-error">
-          {{ errorMessage }}
-        </div>
-
+    
+        @if (successMessage) {
+          <div class="alert alert-success">
+            {{ successMessage }}
+          </div>
+        }
+    
+        @if (errorMessage) {
+          <div class="alert alert-error">
+            {{ errorMessage }}
+          </div>
+        }
+    
         <form (ngSubmit)="register()" #registerForm="ngForm">
           <div class="form-group">
             <label for="fullName">Full Name</label>
@@ -31,9 +35,9 @@ import { AuthService } from '../auth.service';
               [(ngModel)]="fullName"
               required
               placeholder="Enter your full name"
-            />
+              />
           </div>
-
+    
           <div class="form-group">
             <label for="email">Email</label>
             <input
@@ -43,9 +47,9 @@ import { AuthService } from '../auth.service';
               [(ngModel)]="email"
               required
               placeholder="Enter your email"
-            />
+              />
           </div>
-
+    
           <div class="form-group">
             <label for="password">Password</label>
             <input
@@ -55,9 +59,9 @@ import { AuthService } from '../auth.service';
               [(ngModel)]="password"
               required
               placeholder="Enter your password"
-            />
+              />
           </div>
-
+    
           <div class="form-group">
             <label for="confirmPassword">Confirm Password</label>
             <input
@@ -67,20 +71,20 @@ import { AuthService } from '../auth.service';
               [(ngModel)]="confirmPassword"
               required
               placeholder="Confirm your password"
-            />
+              />
           </div>
-
+    
           <button type="submit" class="primary" [disabled]="loading">
             {{ loading ? 'Registering...' : 'Register' }}
           </button>
         </form>
-
+    
         <p class="login-link">
           Already have an account? <a routerLink="/login">Login here</a>
         </p>
       </div>
     </div>
-  `,
+    `,
     styles: [`
     .register-container {
       display: flex;

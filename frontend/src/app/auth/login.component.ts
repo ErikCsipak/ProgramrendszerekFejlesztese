@@ -1,22 +1,24 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../auth.service';
 
 @Component({
     selector: 'app-login',
-    imports: [CommonModule, FormsModule, RouterModule],
+    imports: [FormsModule, RouterModule],
     template: `
     <div class="login-container">
       <div class="login-box">
         <h2>Course Management System</h2>
         <h3>Login</h3>
-
-        <div *ngIf="errorMessage" class="alert alert-error">
-          {{ errorMessage }}
-        </div>
-
+    
+        @if (errorMessage) {
+          <div class="alert alert-error">
+            {{ errorMessage }}
+          </div>
+        }
+    
         <form (ngSubmit)="login()" #loginForm="ngForm">
           <div class="form-group">
             <label for="email">Email</label>
@@ -27,9 +29,9 @@ import { AuthService } from '../auth.service';
               [(ngModel)]="email"
               required
               placeholder="Enter your email"
-            />
+              />
           </div>
-
+    
           <div class="form-group">
             <label for="password">Password</label>
             <input
@@ -39,20 +41,20 @@ import { AuthService } from '../auth.service';
               [(ngModel)]="password"
               required
               placeholder="Enter your password"
-            />
+              />
           </div>
-
+    
           <button type="submit" class="primary" [disabled]="loading">
             {{ loading ? 'Logging in...' : 'Login' }}
           </button>
         </form>
-
+    
         <p class="register-link">
           Don't have an account? <a routerLink="/register">Register here</a>
         </p>
       </div>
     </div>
-  `,
+    `,
     styles: [`
     .login-container {
       display: flex;

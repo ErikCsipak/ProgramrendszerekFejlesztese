@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { Course } from '../shared/models/course.model';
 import { CourseService } from '../courses/course.service';
@@ -8,61 +8,78 @@ import { CourseListComponent } from '../courses/course-list.component';
 
 @Component({
     selector: 'app-student-dashboard',
-    imports: [CommonModule, RouterModule, CourseListComponent],
+    imports: [RouterModule, CourseListComponent],
     template: `
     <div class="student-dashboard">
       <div class="header">
         <h1>Student Dashboard</h1>
         <p>Welcome, {{ userName }}!</p>
       </div>
-
+    
       <div class="tabs">
-        <button
-          *ngFor="let tab of ['available', 'enrolled']"
-          [class.active]="activeTab === tab"
-          (click)="activeTab = tab"
-          class="tab-btn"
-        >
-          {{ tab === 'available' ? 'Available Courses' : 'My Courses' }}
-        </button>
+        @for (tab of ['available', 'enrolled']; track tab) {
+          <button
+            [class.active]="activeTab === tab"
+            (click)="activeTab = tab"
+            class="tab-btn"
+            >
+            {{ tab === 'available' ? 'Available Courses' : 'My Courses' }}
+          </button>
+        }
       </div>
-
+    
       <div class="tab-content">
         <!-- Available Courses Tab -->
-        <div *ngIf="activeTab === 'available'" class="tab-pane">
-          <div *ngIf="loadingAvailable" class="loading">Loading available courses...</div>
-          <div *ngIf="!loadingAvailable && errorAvailable" class="alert alert-error">
-            {{ errorAvailable }}
+        @if (activeTab === 'available') {
+          <div class="tab-pane">
+            @if (loadingAvailable) {
+              <div class="loading">Loading available courses...</div>
+            }
+            @if (!loadingAvailable && errorAvailable) {
+              <div class="alert alert-error">
+                {{ errorAvailable }}
+              </div>
+            }
+            @if (!loadingAvailable && !errorAvailable) {
+              <app-course-list
+                [courses]="availableCourses"
+                emptyMessage="No available courses at this time"
+                [showActionButton]="true"
+                [actionButtonText]="getJoinButtonTexts()"
+                (action)="joinCourse($event)"
+              ></app-course-list>
+            }
           </div>
-          <app-course-list
-            *ngIf="!loadingAvailable && !errorAvailable"
-            [courses]="availableCourses"
-            emptyMessage="No available courses at this time"
-            [showActionButton]="true"
-            [actionButtonText]="getJoinButtonTexts()"
-            (action)="joinCourse($event)"
-          ></app-course-list>
-        </div>
-
+        }
+    
         <!-- My Courses Tab -->
-        <div *ngIf="activeTab === 'enrolled'" class="tab-pane">
-          <div *ngIf="loadingEnrolled" class="loading">Loading your courses...</div>
-          <div *ngIf="!loadingEnrolled && errorEnrolled" class="alert alert-error">
-            {{ errorEnrolled }}
+        @if (activeTab === 'enrolled') {
+          <div class="tab-pane">
+            @if (loadingEnrolled) {
+              <div class="loading">Loading your courses...</div>
+            }
+            @if (!loadingEnrolled && errorEnrolled) {
+              <div class="alert alert-error">
+                {{ errorEnrolled }}
+              </div>
+            }
+            @if (!loadingEnrolled && !errorEnrolled) {
+              <app-course-list
+                [courses]="enrolledCourses"
+                emptyMessage="You are not enrolled in any courses yet"
+              ></app-course-list>
+            }
           </div>
-          <app-course-list
-            *ngIf="!loadingEnrolled && !errorEnrolled"
-            [courses]="enrolledCourses"
-            emptyMessage="You are not enrolled in any courses yet"
-          ></app-course-list>
+        }
+      </div>
+    
+      @if (successMessage) {
+        <div class="alert alert-success">
+          {{ successMessage }}
         </div>
-      </div>
-
-      <div *ngIf="successMessage" class="alert alert-success">
-        {{ successMessage }}
-      </div>
+      }
     </div>
-  `,
+    `,
     styles: [`
     .student-dashboard {
       padding: 20px;
