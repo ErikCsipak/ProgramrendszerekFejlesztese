@@ -5,10 +5,9 @@ import { Course } from '../shared/models/course.model';
 import { CourseService } from './course.service';
 
 @Component({
-  selector: 'app-course-detail',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  template: `
+    selector: 'app-course-detail',
+    imports: [CommonModule, RouterModule],
+    template: `
     <div class="course-detail-container">
       <div *ngIf="loading" class="loading">Loading course details...</div>
 
@@ -69,7 +68,7 @@ import { CourseService } from './course.service';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .course-detail-container {
       padding: 20px;
     }

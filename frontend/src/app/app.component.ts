@@ -3,15 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule, RouterOutlet],
-  template: `
+    selector: 'app-root',
+    imports: [CommonModule, RouterOutlet],
+    template: `
     <div class="container">
       <router-outlet></router-outlet>
     </div>
   `,
-  styles: [`
+    styles: [`
     .container {
       max-width: 1200px;
       margin: 0 auto;

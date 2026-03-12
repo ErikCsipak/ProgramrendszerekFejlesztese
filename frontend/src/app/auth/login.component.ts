@@ -5,10 +5,9 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../auth.service';
 
 @Component({
-  selector: 'app-login',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
-  template: `
+    selector: 'app-login',
+    imports: [CommonModule, FormsModule, RouterModule],
+    template: `
     <div class="login-container">
       <div class="login-box">
         <h2>Course Management System</h2>
@@ -54,7 +53,7 @@ import { AuthService } from '../auth.service';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .login-container {
       display: flex;
       justify-content: center;

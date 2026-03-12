@@ -9,10 +9,9 @@ import { AdminService } from '../admin/admin.service';
 import { CourseListComponent } from '../courses/course-list.component';
 
 @Component({
-  selector: 'app-admin-dashboard',
-  standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, CourseListComponent],
-  template: `
+    selector: 'app-admin-dashboard',
+    imports: [CommonModule, RouterModule, FormsModule, CourseListComponent],
+    template: `
     <div class="admin-dashboard">
       <div class="header">
         <h1>Admin Dashboard</h1>
@@ -182,7 +181,7 @@ import { CourseListComponent } from '../courses/course-list.component';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .admin-dashboard {
       padding: 20px;
       max-width: 1200px;

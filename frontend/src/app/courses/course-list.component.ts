@@ -4,10 +4,9 @@ import { RouterModule } from '@angular/router';
 import { Course } from '../shared/models/course.model';
 
 @Component({
-  selector: 'app-course-list',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  template: `
+    selector: 'app-course-list',
+    imports: [CommonModule, RouterModule],
+    template: `
     <div class="course-list-container">
       <div *ngIf="courses.length === 0" class="no-courses">
         {{ emptyMessage }}
@@ -59,7 +58,7 @@ import { Course } from '../shared/models/course.model';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .course-list-container {
       padding: 20px;
     }

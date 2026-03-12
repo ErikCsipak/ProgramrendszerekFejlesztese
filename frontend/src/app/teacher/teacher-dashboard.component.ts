@@ -7,10 +7,9 @@ import { CourseService } from '../courses/course.service';
 import { CourseListComponent } from '../courses/course-list.component';
 
 @Component({
-  selector: 'app-teacher-dashboard',
-  standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, CourseListComponent],
-  template: `
+    selector: 'app-teacher-dashboard',
+    imports: [CommonModule, RouterModule, FormsModule, CourseListComponent],
+    template: `
     <div class="teacher-dashboard">
       <div class="header">
         <h1>Teacher Dashboard</h1>
@@ -140,7 +139,7 @@ import { CourseListComponent } from '../courses/course-list.component';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .teacher-dashboard {
       padding: 20px;
       max-width: 1200px;

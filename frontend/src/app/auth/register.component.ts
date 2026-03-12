@@ -5,10 +5,9 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../auth.service';
 
 @Component({
-  selector: 'app-register',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
-  template: `
+    selector: 'app-register',
+    imports: [CommonModule, FormsModule, RouterModule],
+    template: `
     <div class="register-container">
       <div class="register-box">
         <h2>Course Management System</h2>
@@ -82,7 +81,7 @@ import { AuthService } from '../auth.service';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .register-container {
       display: flex;
       justify-content: center;
