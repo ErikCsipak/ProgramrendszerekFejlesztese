@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: coursemgmt-postgres
+    environment:
+      POSTGRES_DB: coursemgmt
+      POSTGRES_USER: coursemgmt
+      POSTGRES_PASSWORD: coursemgmt123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - coursemgmt-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coursemgmt"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: coursemgmt-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      quarkus.datasource.jdbc.url: jdbc:postgresql://postgres:5432/coursemgmt
+      quarkus.datasource.username: coursemgmt
+      quarkus.datasource.password: coursemgmt123
+      quarkus.datasource.jdbc.min-size: 8
+      quarkus.datasource.jdbc.max-size: 16
+      quarkus.flyway.migrate-at-start: "true"
+      quarkus.http.cors.origins: "http://localhost,http://localhost:80,http://localhost:4200"
+      quarkus.http.cors.methods: "GET,PUT,POST,DELETE,OPTIONS"
+      quarkus.http.cors.headers: "Content-Type,Authorization"
+      quarkus.http.cors.credentials: "true"
+    networks:
+      - coursemgmt-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: coursemgmt-frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - coursemgmt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  coursemgmt-network:
+    driver: bridge
