@@ -9,7 +9,6 @@ RUN mvn clean package -DskipTests
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY --from=builder /build/target/quarkus-app/lib/ lib/
-COPY --from=builder /build/target/quarkus-app/*.jar .
+COPY --from=builder /build/target/quarkus-app/ /app/
 EXPOSE 8080
 CMD ["java", "-jar", "quarkus-run.jar"]

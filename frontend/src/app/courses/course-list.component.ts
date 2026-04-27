@@ -5,19 +5,16 @@ import { Course } from '../shared/models/course.model';
 
 @Component({
     selector: 'app-course-list',
+    standalone: true,
     imports: [CommonModule, RouterModule],
     template: `
     <div class="course-list-container">
-      @if (courses.length === 0) {
-        <div class="no-courses">
-          {{ emptyMessage }}
-        </div>
-      }
-    
-      @if (courses.length > 0) {
-        <div class="courses-grid">
-          @for (course of courses; track course) {
-            <div class="course-card">
+      <div *ngIf="courses.length === 0" class="no-courses">
+        {{ emptyMessage }}
+      </div>
+
+      <div *ngIf="courses.length > 0" class="courses-grid">
+        <div *ngFor="let course of courses" class="course-card">
               <div class="course-card-header">
                 <h3>{{ course.name }}</h3>
                 <span class="badge" [ngClass]="'badge-' + course.status.toLowerCase()">
@@ -44,20 +41,15 @@ import { Course } from '../shared/models/course.model';
                 <button class="btn-small" [routerLink]="['/courses', course.id]">
                   View Details
                 </button>
-                @if (showActionButton) {
-                  <button
-                    class="btn-small primary"
-                    (click)="onAction(course)"
-                    [disabled]="isActionDisabled(course)"
-                    >
-                    {{ getActionButtonText(course) }}
-                  </button>
-                }
+                <button *ngIf="showActionButton"
+                  class="btn-small primary"
+                  (click)="onAction(course)"
+                  [disabled]="isActionDisabled(course)">
+                  {{ getActionButtonText(course) }}
+                </button>
               </div>
             </div>
-          }
         </div>
-      }
     </div>
     `,
     styles: [`

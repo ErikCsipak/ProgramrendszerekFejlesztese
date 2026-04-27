@@ -2,10 +2,11 @@ import { Component } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../auth.service';
+import { AuthService } from './auth.service';
 
 @Component({
     selector: 'app-register',
+    standalone: true,
     imports: [FormsModule, RouterModule],
     template: `
     <div class="register-container">
@@ -13,17 +14,13 @@ import { AuthService } from '../auth.service';
         <h2>Course Management System</h2>
         <h3>Register</h3>
     
-        @if (successMessage) {
-          <div class="alert alert-success">
-            {{ successMessage }}
-          </div>
-        }
+        <div *ngIf="successMessage" class="alert alert-success">
+          {{ successMessage }}
+        </div>
     
-        @if (errorMessage) {
-          <div class="alert alert-error">
-            {{ errorMessage }}
-          </div>
-        }
+        <div *ngIf="errorMessage" class="alert alert-error">
+          {{ errorMessage }}
+        </div>
     
         <form (ngSubmit)="register()" #registerForm="ngForm">
           <div class="form-group">
@@ -221,7 +218,7 @@ export class RegisterComponent {
           this.router.navigate(['/login']);
         }, 2000);
       },
-      error: (error) => {
+      error: (error: any) => {
         this.loading = false;
         this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
       }

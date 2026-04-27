@@ -2,10 +2,11 @@ import { Component } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../auth.service';
+import { AuthService } from './auth.service';
 
 @Component({
     selector: 'app-login',
+    standalone: true,
     imports: [FormsModule, RouterModule],
     template: `
     <div class="login-container">
@@ -13,11 +14,9 @@ import { AuthService } from '../auth.service';
         <h2>Course Management System</h2>
         <h3>Login</h3>
     
-        @if (errorMessage) {
-          <div class="alert alert-error">
-            {{ errorMessage }}
-          </div>
-        }
+        <div *ngIf="errorMessage" class="alert alert-error">
+          {{ errorMessage }}
+        </div>
     
         <form (ngSubmit)="login()" #loginForm="ngForm">
           <div class="form-group">
@@ -169,7 +168,7 @@ export class LoginComponent {
     this.errorMessage = '';
 
     this.authService.login(this.email, this.password).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.loading = false;
         // Redirect based on role
         const role = response.user.role;
@@ -181,7 +180,7 @@ export class LoginComponent {
           this.router.navigate(['/student']);
         }
       },
-      error: (error) => {
+      error: (error: any) => {
         this.loading = false;
         this.errorMessage = error.error?.message || 'Login failed. Please try again.';
       }

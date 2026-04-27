@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './shared/guards/auth.guard';
 import { adminGuard, studentGuard, teacherGuard } from './shared/guards/role.guard';
+import { RedirectComponent } from './redirect.component';
 
 import { LoginComponent } from './auth/login.component';
 import { RegisterComponent } from './auth/register.component';
@@ -10,7 +11,7 @@ import { AdminDashboardComponent } from './admin/admin-dashboard.component';
 import { CourseDetailComponent } from './courses/course-detail.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/student', pathMatch: 'full' },
+  { path: '', component: RedirectComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
 
