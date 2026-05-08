@@ -37,9 +37,9 @@ This is a three-tier application consisting of:
 - Git (for cloning the repository)
 
 **OR for local development:**
-- Java 21 (OpenJDK or similar)
-- Maven 3.9+
-- Node.js 20+ and npm
+- Java 17 or later (OpenJDK 17+ recommended; Quarkus 3 requires Java 17+)
+- Maven 3.8+ (3.9+ recommended)
+- Node.js 20.19.0 or later (or Node 22+) and npm
 - PostgreSQL 15+
 
 ## Quick Start with Docker Compose
@@ -155,8 +155,10 @@ The backend will start on http://localhost:8080 and automatically run Flyway mig
 
 #### 1. Prerequisites
 ```bash
-node --version  # v20+
-npm --version   # 10+
+# Node.js: minimum v20.19.0 (some Angular tooling requires >=20.19)
+node --version
+# npm (comes with Node.js)
+npm --version
 ```
 
 #### 2. Install Dependencies

@@ -31,7 +31,7 @@ FROM nginx:alpine AS runner
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy the static build output from the build stage to Nginx's default HTML serving directory
-COPY --chown=nginx:nginx --from=builder /app/dist/*/browser /usr/share/nginx/html
+COPY --chown=nginx:nginx --from=builder /app/dist/coursemgmt /usr/share/nginx/html
 
 # Ensure nginx can write its runtime/cache directories, then switch to non-root user
 RUN mkdir -p /var/cache/nginx/client_temp /var/run/nginx /var/log/nginx \
