@@ -4,7 +4,7 @@ info:
   version: "1.0.0"
   description: OpenAPI spec for the CourseMgmt backend (auto-generated summary)
 servers:
-  - url: http://localhost:8082/api
+  - url: http://localhost:8080/api
 paths:
   /auth/login:
     post:

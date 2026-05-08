@@ -3,7 +3,7 @@
 # =========================================
 
 # Use a lightweight DHI Node.js image for building
-FROM node:20-alpine AS builder
+FROM dhi.io/node:24-alpine3.22-dev AS builder
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -12,37 +12,32 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Install project dependencies using npm ci (ensures a clean, reproducible install)
-RUN npm install
-
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 # Copy the rest of the application source code into the container
 COPY . .
 
 # Build the Angular application
-RUN npm run build 
+RUN npm run build
 
 # =========================================
 # Stage 2: Prepare Nginx to Serve Static Files
 # =========================================
 
-FROM nginx:alpine AS runner
+FROM dhi.io/nginx:1.28.0-alpine3.21-dev AS runner
 
 # Copy custom Nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy the static build output from the build stage to Nginx's default HTML serving directory
-COPY --chown=nginx:nginx --from=builder /app/dist/coursemgmt /usr/share/nginx/html
+COPY --chown=nginx:nginx --from=builder /app/dist/*/browser /usr/share/nginx/html
 
-# Ensure nginx can write its runtime/cache directories, then switch to non-root user
-RUN mkdir -p /var/cache/nginx/client_temp /var/run/nginx /var/log/nginx \
-	&& chown -R nginx:nginx /var/cache/nginx /var/run/nginx /var/log/nginx
+# Use a non-root user for security best practices
+USER nginx
 
-# Note: keep the container running as root so nginx master process can create the pid file;
-# worker processes still drop privileges to the `nginx` user because we've chowned runtime dirs.
-
-# Expose port 4200 to allow HTTP traffic from host
-# The custom Nginx config listens on port 4200 so expose the same port
-EXPOSE 4200
+# Expose port 8080 to allow HTTP traffic
+# Note: The default Nginx container now listens on port 8080 instead of 80
+EXPOSE 8080
 
 # Start Nginx directly with custom config
 ENTRYPOINT ["nginx", "-c", "/etc/nginx/nginx.conf"]

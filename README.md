@@ -56,7 +56,7 @@ docker-compose up --build
 
 This will:
 - Create and start PostgreSQL database on port 5432
-- Build and start Quarkus backend on port 8080
+- Build and start Quarkus backend on port 8082
 - Build and start Angular frontend on port 80 (served via Nginx)
 - Run database migrations automatically
 
