@@ -79,25 +79,77 @@ java -version
 mvn -version
 ```
 
-#### 2. PostgreSQL Setup
-```bash
-# Run PostgreSQL locally (or use Docker)
-docker run -d \
-  --name coursemgmt-postgres \
-  -e POSTGRES_DB=coursemgmt \
-  -e POSTGRES_USER=coursemgmt \
-  -e POSTGRES_PASSWORD=coursemgmt123 \
-  -p 5432:5432 \
-  postgres:15-alpine
+#### 2. PostgreSQL Setup (run with Docker) and connect backend locally
+
+The backend development environment expects a PostgreSQL instance reachable at localhost:5432 by default (see `backend/src/main/resources/application.properties`). The easiest way to provide this locally is to run Postgres in Docker and then run the backend on your host machine (so you can use your IDE / Quarkus dev mode).
+
+1) Start Postgres with a persistent volume (PowerShell):
+
+```powershell
+# from repository root (PowerShell)
+docker run -d --name coursemgmt-postgres `
+  -e POSTGRES_DB=coursemgmt `
+  -e POSTGRES_USER=coursemgmt `
+  -e POSTGRES_PASSWORD=coursemgmt123 `
+  -p 5432:5432 `
+  -v coursemgmt_pgdata:/var/lib/postgresql/data `
+  postgres:15
 ```
 
-#### 3. Start Backend
-```bash
+Notes:
+- The container maps container port 5432 to your host's 5432, so local tools (psql, DBeaver, the backend running on your machine) can connect to localhost:5432.
+- If port 5432 is already in use on your machine, stop the conflicting service or change the host port (e.g. `-p 5433:5432`) and update the JDBC URL below accordingly.
+
+2) Verify the database is accepting connections (PowerShell):
+
+```powershell
+# view container logs
+docker logs -f coursemgmt-postgres
+
+# run an interactive psql inside the container as the postgres superuser
+docker exec -it coursemgmt-postgres psql -U coursemgmt -d coursemgmt
+# then in psql: \dt  (to list tables)
+```
+
+3) Connect your locally running backend to the Docker Postgres
+
+The default `application.properties` already points to `jdbc:postgresql://localhost:5432/coursemgmt` with username `coursemgmt` and password `coursemgmt123`. If you change the container port or credentials, you can override Quarkus properties via environment variables before starting the backend.
+
+PowerShell example (set environment variables for the current session then run Quarkus dev mode):
+
+```powershell
+$env:QUARKUS_DATASOURCE_JDBC_URL = "jdbc:postgresql://localhost:5432/coursemgmt"
+$env:QUARKUS_DATASOURCE_USERNAME = "coursemgmt"
+$env:QUARKUS_DATASOURCE_PASSWORD = "coursemgmt123"
+
+# start the backend in dev mode (hot reload)
 cd backend
 mvn clean quarkus:dev
 ```
 
-The backend will start on http://localhost:8080 and automatically create tables via Flyway migrations.
+Alternatively you can run the packaged JAR and rely on the settings in `application.properties`:
+
+```powershell
+cd backend
+mvn -DskipTests package
+java -jar target/quarkus-app/quarkus-run.jar
+```
+
+4) Connect GUI tools (DBeaver / pgAdmin)
+
+Use these connection settings in your client:
+- Host: localhost
+- Port: 5432 (or the host port you mapped)
+- Database: coursemgmt
+- User: coursemgmt
+- Password: coursemgmt123
+
+5) Common issues
+- If Flyway migrations fail on backend start, check backend logs and the `flyway_schema_history` table in Postgres for applied/failed migrations.
+- If you get authentication failures from DBeaver while the container accepts connections internally, ensure you're connecting to the same Postgres instance (localhost:5432). On Docker Desktop with WSL backend `host.docker.internal` may behave differently; prefer `localhost` for host-to-container port mappings.
+- If you changed the host port (e.g. bound to 5433), update `QUARKUS_DATASOURCE_JDBC_URL` accordingly.
+
+The backend will start on http://localhost:8080 and automatically run Flyway migrations (if `quarkus.flyway.migrate-at-start=true`).
 
 ### Frontend Setup
 
@@ -493,3 +545,14 @@ ProgramrendszerekFejlesztese/
 
 **Created**: 2024
 **Stack**: Quarkus + Angular + PostgreSQL + Docker
+
+# build and start all services
+docker-compose up --build
+
+Frontend: open http://localhost:4200
+Backend API: http://localhost:8080/api (or health at http://localhost:8080/health)
+Database: connect with host=localhost, port=5432, db=coursemgmt, user=coursemgmt, password=coursemgmt123
+
+Test users:
+admin@example.com / test1234 
+teacher@example.com / test1234

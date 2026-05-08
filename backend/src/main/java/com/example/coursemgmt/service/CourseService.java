@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class CourseService {
 
     @Transactional
-    public CourseDto createCourse(Long teacherId, CreateCourseRequest request) {
+    public CourseDto createCourse(CreateCourseRequest request) {
         if (request.getName() == null || request.getName().isEmpty()) {
             throw new BadRequestException("Course name is required");
         }
@@ -28,7 +28,7 @@ public class CourseService {
         Course course = new Course();
         course.setName(request.getName());
         course.setDescription(request.getDescription());
-        course.setTeacherId(teacherId);
+        course.setTeacherId(/*todo*/);
         course.setStatus(Course.CourseStatus.IN_PLAN);
         course.setMaxStudents(request.getMaxStudents());
         course.setCurrentEnrollment(0);
@@ -53,13 +53,8 @@ public class CourseService {
     }
 
     @Transactional
-    public CourseDto updateCourse(Long courseId, Long teacherId, CreateCourseRequest request) {
+    public CourseDto updateCourse(Long courseId, CreateCourseRequest request) {
         Course course = getCourseById(courseId);
-
-        // Only teacher who owns the course can edit
-        if (!course.getTeacherId().equals(teacherId)) {
-            throw new ForbiddenException("You can only edit your own courses");
-        }
 
         // Can only edit if in IN_PLAN status
         if (course.getStatus() != Course.CourseStatus.IN_PLAN) {
@@ -129,13 +124,8 @@ public class CourseService {
     }
 
     @Transactional
-    public void deleteCourse(Long courseId, Long userId, String userRole) {
+    public void deleteCourse(Long courseId) {
         Course course = getCourseById(courseId);
-
-        // Only teacher who owns it or admin can delete
-        if (!"ADMIN".equals(userRole) && !course.getTeacherId().equals(userId)) {
-            throw new ForbiddenException("You can only delete your own courses");
-        }
 
         // Cannot delete if there are enrollments
         if (course.getCurrentEnrollment() > 0) {
@@ -146,7 +136,7 @@ public class CourseService {
     }
 
     @Transactional
-    public CourseDto approveCourse(Long courseId, Long adminId) {
+    public CourseDto approveCourse(Long courseId) {
         Course course = getCourseById(courseId);
 
         if (course.getStatus() != Course.CourseStatus.IN_PLAN) {
@@ -154,7 +144,7 @@ public class CourseService {
         }
 
         course.setStatus(Course.CourseStatus.APPROVED);
-        course.setApprovedBy(adminId);
+        course.setApprovedBy(/*todo*/);
         course.setApprovedAt(java.time.LocalDateTime.now());
         course.persist();
 

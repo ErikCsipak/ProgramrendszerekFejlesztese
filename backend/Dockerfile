@@ -7,7 +7,9 @@ COPY src/ src/
 RUN mvn clean package -DskipTests
 
 # Runtime stage
-FROM eclipse-temurin:21-jre-alpine
+# Use Debian-based Temurin JRE (non-alpine) so native libraries used by argon2-jvm
+# work correctly. Alpine (musl) often causes SIGSEGV in JNI/native libs.
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=builder /build/target/quarkus-app/ /app/
 EXPOSE 8080

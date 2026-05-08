@@ -30,7 +30,7 @@ public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
             status = Response.Status.NOT_FOUND.getStatusCode();
             message = exception.getMessage();
         } else {
-            log.warning("Unhandled exception: " + exception.getMessage());
+            log.log(java.util.logging.Level.WARNING, "Unhandled exception", exception);
         }
 
         Map<String, Object> response = new HashMap<>();

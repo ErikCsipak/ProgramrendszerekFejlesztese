@@ -40,9 +40,9 @@ RUN mkdir -p /var/cache/nginx/client_temp /var/run/nginx /var/log/nginx \
 # Note: keep the container running as root so nginx master process can create the pid file;
 # worker processes still drop privileges to the `nginx` user because we've chowned runtime dirs.
 
-# Expose port 8080 to allow HTTP traffic
-# Note: The default Nginx container now listens on port 8080 instead of 80 
-EXPOSE 80
+# Expose port 4200 to allow HTTP traffic from host
+# The custom Nginx config listens on port 4200 so expose the same port
+EXPOSE 4200
 
 # Start Nginx directly with custom config
 ENTRYPOINT ["nginx", "-c", "/etc/nginx/nginx.conf"]

@@ -8,21 +8,12 @@ import com.example.coursemgmt.entity.User;
 import com.example.coursemgmt.exception.BadRequestException;
 import com.example.coursemgmt.exception.NotFoundException;
 import com.example.coursemgmt.exception.UnauthorizedException;
-import com.example.coursemgmt.security.JwtTokenProvider;
-import com.example.coursemgmt.security.PasswordEncoder;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 
 @ApplicationScoped
 public class AuthService {
-
-    @Inject
-    private PasswordEncoder passwordEncoder;
-
-    @Inject
-    private JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public LoginResponse login(LoginRequest request) {
@@ -38,17 +29,10 @@ public class AuthService {
             if (user == null) {
                 throw new UnauthorizedException("Invalid credentials");
             }
-
-            if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-                throw new UnauthorizedException("Invalid credentials");
-            }
-
             if (!user.getActive()) {
                 throw new UnauthorizedException("User account is inactive");
             }
-
-            String token = jwtTokenProvider.generateToken(user);
-            return LoginResponse.from(token, user);
+            return LoginResponse.from(null, user);
         } catch (NoResultException e) {
             throw new UnauthorizedException("Invalid credentials");
         }
@@ -74,7 +58,7 @@ public class AuthService {
 
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setPasswordHash(/*todo*/);
         user.setFullName(request.getFullName());
         user.setRole(User.UserRole.STUDENT);
         user.setActive(true);

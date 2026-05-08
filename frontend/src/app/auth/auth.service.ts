@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { User } from '../shared/models/user.model';
 import { environment } from '../../environments/environment';
 
@@ -37,7 +38,16 @@ export class AuthService {
       this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, { email, password })
         .subscribe({
           next: (response) => {
-            localStorage.setItem('token', response.token);
+            // Some backends return the token as `token` and some as `accessToken`.
+            // Accept either and store a normalized `token` value.
+            const anyResp = response as any;
+            const tokenValue: string | null = anyResp?.token ?? anyResp?.accessToken ?? null;
+            if (tokenValue) {
+              localStorage.setItem('token', tokenValue as string);
+            } else {
+              // Ensure we don't store literal 'null'/'undefined' strings
+              localStorage.removeItem('token');
+            }
             localStorage.setItem('user', JSON.stringify(response.user));
             this.currentUserSubject.next(response.user);
             observer.next(response);
@@ -62,8 +72,21 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
+  /**
+   * Call backend logout endpoint (no-op for stateless JWT) and clear local state.
+   */
+  logoutRequest(): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/auth/logout`, {}).pipe(
+      tap(() => this.logout())
+    );
+  }
+
   getToken(): string | null {
-    return localStorage.getItem('token');
+    const t = localStorage.getItem('token');
+    if (!t) return null;
+    // Avoid returning literal strings used by some storage mistakes
+    if (t === 'null' || t === 'undefined') return null;
+    return t;
   }
 
   isAuthenticated(): boolean {

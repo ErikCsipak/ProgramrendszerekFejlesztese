@@ -4,9 +4,7 @@ import com.example.coursemgmt.dto.UserDto;
 import com.example.coursemgmt.entity.User;
 import com.example.coursemgmt.exception.BadRequestException;
 import com.example.coursemgmt.exception.NotFoundException;
-import com.example.coursemgmt.security.PasswordEncoder;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
@@ -14,9 +12,6 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class AdminService {
-
-    @Inject
-    private PasswordEncoder passwordEncoder;
 
     public List<UserDto> getAllUsers() {
         List<User> users = User.listAll();
@@ -62,7 +57,7 @@ public class AdminService {
 
         User user = new User();
         user.setEmail(email);
-        user.setPasswordHash(passwordEncoder.encode(password));
+        user.setPasswordHash(/*TODO*/);
         user.setFullName(fullName);
         user.setRole(userRole);
         user.setActive(true);

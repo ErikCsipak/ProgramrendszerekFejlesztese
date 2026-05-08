@@ -10,7 +10,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 @Path("/api/auth")
 @Produces(MediaType.APPLICATION_JSON)
@@ -19,9 +18,6 @@ public class AuthResource {
 
     @Inject
     private AuthService authService;
-
-    @Inject
-    private JsonWebToken jwtPrincipal;
 
     @POST
     @Path("/login")
@@ -42,13 +38,13 @@ public class AuthResource {
     @GET
     @Path("/validate")
     public Response validate() {
-        try {
-            Long userId = jwtPrincipal.getClaim("id");
-            UserDto user = UserDto.from(authService.getUserById(userId));
-            return Response.ok(user).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Invalid token").build();
-        }
+        return Response.status(Response.Status.NOT_IMPLEMENTED)
+                .entity("Authentication disabled").build();
+    }
+
+    @POST
+    @Path("/logout")
+    public Response logout() {
+        return Response.noContent().build();
     }
 }

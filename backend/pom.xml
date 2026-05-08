@@ -68,26 +68,7 @@
       <artifactId>quarkus-flyway</artifactId>
     </dependency>
 
-    <!-- Security & JWT -->
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-jwt</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-security</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-security-jpa</artifactId>
-    </dependency>
-
-    <!-- Password hashing -->
-    <dependency>
-      <groupId>de.mkammerer</groupId>
-      <artifactId>argon2-jvm</artifactId>
-      <version>2.11</version>
-    </dependency>
+    <!-- (Authentication & authorization removed) -->
 
     <!-- Lombok -->
     <dependency>
@@ -101,6 +82,10 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jsonb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-health</artifactId>
     </dependency>
   </dependencies>
 
@@ -117,6 +102,14 @@
         <version>${compiler-plugin.version}</version>
         <configuration>
           <parameters>true</parameters>
+          <!-- Ensure Lombok annotation processing runs during compilation -->
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>1.18.44</version>
+            </path>
+          </annotationProcessorPaths>
         </configuration>
       </plugin>
       <plugin>

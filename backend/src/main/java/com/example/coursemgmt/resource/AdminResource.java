@@ -4,7 +4,6 @@ import com.example.coursemgmt.dto.CourseDto;
 import com.example.coursemgmt.dto.UserDto;
 import com.example.coursemgmt.service.AdminService;
 import com.example.coursemgmt.service.CourseService;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -15,7 +14,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +21,6 @@ import java.util.Map;
 @Path("/api/admin")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RolesAllowed("ADMIN")
 public class AdminResource {
 
     @Inject
@@ -31,9 +28,6 @@ public class AdminResource {
 
     @Inject
     private CourseService courseService;
-
-    @Inject
-    private JsonWebToken jwtPrincipal;
 
     @GET
     @Path("/pending-courses")
@@ -45,8 +39,7 @@ public class AdminResource {
     @POST
     @Path("/courses/{courseId}/approve")
     public Response approveCourse(@PathParam("courseId") Long courseId) {
-        Long adminId = jwtPrincipal.getClaim("id");
-        CourseDto course = courseService.approveCourse(courseId, adminId);
+        CourseDto course = courseService.approveCourse(courseId);
         return Response.ok(course).build();
     }
 
