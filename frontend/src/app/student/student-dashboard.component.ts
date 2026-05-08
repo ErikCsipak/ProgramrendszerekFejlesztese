@@ -46,6 +46,7 @@ import { CourseListComponent } from '../courses/course-list.component';
                 emptyMessage="No available courses at this time"
                 [showActionButton]="true"
                 [actionButtonText]="getJoinButtonTexts()"
+                [hideActionIfEnrolled]="true"
                 (action)="joinCourse($event)"
               ></app-course-list>
             }
@@ -67,18 +68,21 @@ import { CourseListComponent } from '../courses/course-list.component';
               <app-course-list
                 [courses]="enrolledCourses"
                 emptyMessage="You are not enrolled in any courses yet"
+                [showActionButton]="true"
+                [actionButtonText]="getLeaveButtonTexts()"
+                [showStatusBadge]="false"
+                (action)="leaveCourse($event)"
               ></app-course-list>
             }
           </div>
         }
       </div>
-    
+
       @if (successMessage) {
         <div class="alert alert-success">
           {{ successMessage }}
         </div>
       }
-    </div>
     `,
     styles: [`
     .student-dashboard {
@@ -190,6 +194,8 @@ export class StudentDashboardComponent implements OnInit {
     private enrollmentService: EnrollmentService
   ) {}
 
+
+
   ngOnInit(): void {
     this.loadAvailableCourses();
     this.loadEnrolledCourses();
@@ -246,5 +252,29 @@ export class StudentDashboardComponent implements OnInit {
       texts[course.id] = course.currentEnrollment >= course.maxStudents ? 'Full' : 'Join';
     });
     return texts;
+  }
+
+  getLeaveButtonTexts(): { [key: number]: string } {
+    const texts: { [key: number]: string } = {};
+    this.enrolledCourses.forEach(course => {
+      texts[course.id] = 'Leave';
+    });
+    return texts;
+  }
+
+  leaveCourse(course: Course): void {
+    if (!confirm(`Are you sure you want to leave ${course.name}?`)) return;
+    this.enrollmentService.leaveCourse(course.id).subscribe({
+      next: () => {
+        this.successMessage = `You left ${course.name}`;
+        this.loadAvailableCourses();
+        this.loadEnrolledCourses();
+        setTimeout(() => this.successMessage = '', 3000);
+      },
+      error: (error) => {
+        const message = error.error?.message || 'Failed to leave course';
+        alert(message);
+      }
+    });
   }
 }

@@ -1,0 +1,511 @@
+openapi: 3.0.3
+info:
+  title: CourseMgmt API
+  version: "1.0.0"
+  description: OpenAPI spec for the CourseMgmt backend (auto-generated summary)
+servers:
+  - url: http://localhost:8082/api
+paths:
+  /auth/login:
+    post:
+      summary: Login
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401': { description: Invalid credentials }
+
+  /auth/register:
+    post:
+      summary: Register new user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+
+  /auth/validate:
+    get:
+      summary: Validate token / get current user info
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: integer
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  authenticated:
+                    type: boolean
+
+  /auth/logout:
+    post:
+      summary: Logout (server-side no-op for JWT)
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '204': { description: Logged out }
+
+  /courses/available:
+    get:
+      summary: Get available courses for enrollment
+      tags: [Courses]
+      responses:
+        '200':
+          description: List of available courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseDto'
+
+  /courses/all:
+    get:
+      summary: Get all courses
+      tags: [Courses]
+      responses:
+        '200':
+          description: All courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseDto'
+
+  /courses/mine:
+    get:
+      summary: Get courses for the teacher (teacher)
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Teacher's courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseDto'
+
+  /courses/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get course details
+      tags: [Courses]
+      responses:
+        '200':
+          description: Course details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDto'
+        '404': { description: Not found }
+    put:
+      summary: Update course (teacher)
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCourseRequest'
+      responses:
+        '200':
+          description: Updated course
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDto'
+    delete:
+      summary: Delete a course (teacher)
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      responses:
+        '204': { description: Deleted }
+
+  /courses:
+    post:
+      summary: Create a new course (teacher)
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCourseRequest'
+      responses:
+        '201':
+          description: Created course
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDto'
+
+  /enrollments/my-courses:
+    get:
+      summary: Get current student's enrolled courses
+      tags: [Enrollments]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of enrolled courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseDto'
+
+  /enrollments/courses/{courseId}/join:
+    post:
+      summary: Join a course (student)
+      tags: [Enrollments]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200': { description: Joined }
+        '400': { description: Bad request }
+
+  /enrollments/courses/{courseId}/leave:
+    delete:
+      summary: Leave a course (student)
+      tags: [Enrollments]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204': { description: Left }
+
+  /enrollments/courses/{courseId}/students:
+    get:
+      summary: Get student ids enrolled in a course (teacher/admin)
+      tags: [Enrollments]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Array of student ids
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+
+  /admin/pending-courses:
+    get:
+      summary: Get pending courses (admin)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Pending courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseDto'
+
+  /admin/courses/{courseId}/approve:
+    post:
+      summary: Approve a pending course (admin)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Approved course
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDto'
+
+  /admin/courses/{courseId}/reject:
+    post:
+      summary: Reject a pending course (admin)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204': { description: Rejected }
+
+  /admin/users:
+    get:
+      summary: Get all users (admin)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDto'
+    post:
+      summary: Create user (admin)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                fullName:
+                  type: string
+                role:
+                  type: string
+      responses:
+        '201':
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+
+  /admin/users/{userId}:
+    get:
+      summary: Get user by id (admin)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+    put:
+      summary: Update user (admin)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                fullName:
+                  type: string
+                active:
+                  type: boolean
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CourseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        teacherId:
+          type: integer
+        status:
+          type: string
+        maxStudents:
+          type: integer
+        currentEnrollment:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        approvedAt:
+          type: string
+          format: date-time
+        approvedBy:
+          type: integer
+        schedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseScheduleDto'
+
+    CourseScheduleDto:
+      type: object
+      properties:
+        id:
+          type: integer
+        courseId:
+          type: integer
+        dayOfWeek:
+          type: string
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+        location:
+          type: string
+
+    CreateCourseRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        maxStudents:
+          type: integer
+        schedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseScheduleDto'
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserDto'
+
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        fullName:
+          type: string
+
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+        active:
+          type: boolean
+

@@ -17,8 +17,12 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class CourseSchedule extends PanacheEntity {
 
-    @Column(name = "course_id", nullable = false)
-    private Long courseId;
+    @ManyToOne(optional = false)
+    @jakarta.persistence.JoinColumn(name = "course_id", nullable = false)
+    private Course course;
+
+    @Column(name = "course_id", insertable = false, updatable = false)
+    private Long courseIdValue;
 
     @Column(name = "day_of_week", nullable = false)
     private String dayOfWeek;
@@ -31,4 +35,8 @@ public class CourseSchedule extends PanacheEntity {
 
     @Column(name = "location")
     private String location;
+
+    public Long getCourseId() {
+        return courseIdValue != null ? courseIdValue : (course != null ? course.id : null);
+    }
 }

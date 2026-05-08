@@ -39,9 +39,11 @@ public class CourseDto {
             course.getUpdatedAt(),
             course.getApprovedAt(),
             course.getApprovedBy(),
-            course.getSchedules().stream()
-                .map(CourseScheduleDto::from)
-                .collect(Collectors.toList())
+            course.getSchedules() != null
+                ? new java.util.ArrayList<>(course.getSchedules()).stream()
+                    .map(CourseScheduleDto::from)
+                    .collect(Collectors.toList())
+                : List.of()
         );
     }
 }

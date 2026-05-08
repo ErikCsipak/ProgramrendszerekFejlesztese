@@ -8,12 +8,21 @@ import com.example.coursemgmt.entity.User;
 import com.example.coursemgmt.exception.BadRequestException;
 import com.example.coursemgmt.exception.NotFoundException;
 import com.example.coursemgmt.exception.UnauthorizedException;
+import com.example.coursemgmt.security.JwtTokenProvider;
+import com.example.coursemgmt.security.PasswordEncoder;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 
 @ApplicationScoped
 public class AuthService {
+
+    @Inject
+    PasswordEncoder passwordEncoder;
+
+    @Inject
+    JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public LoginResponse login(LoginRequest request) {
@@ -29,10 +38,19 @@ public class AuthService {
             if (user == null) {
                 throw new UnauthorizedException("Invalid credentials");
             }
+
             if (!user.getActive()) {
                 throw new UnauthorizedException("User account is inactive");
             }
-            return LoginResponse.from(null, user);
+
+            // Verify password using Argon2
+            if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+                throw new UnauthorizedException("Invalid credentials");
+            }
+
+            // Generate JWT token
+            String token = jwtTokenProvider.generateToken(user.id, user.getEmail(), user.getRole());
+            return LoginResponse.from(token, user);
         } catch (NoResultException e) {
             throw new UnauthorizedException("Invalid credentials");
         }
@@ -51,16 +69,17 @@ public class AuthService {
         }
 
         // Check if user already exists
-        User existingUser = (User) User.find("email", request.getEmail()).firstResultOptional().orElse(null);
+        User existingUser = (User) User.find("username", request.getEmail()).firstResultOptional().orElse(null);
         if (existingUser != null) {
             throw new BadRequestException("User with this email already exists");
         }
 
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPasswordHash(/*todo*/);
+        user.setUsername(request.getEmail());  // Use email as username
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
-        user.setRole(User.UserRole.STUDENT);
+        user.setRole(User.UserRole.STUDENT.name());  // New registrations are students
         user.setActive(true);
 
         user.persist();
@@ -77,3 +96,5 @@ public class AuthService {
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
 }
+
+

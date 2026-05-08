@@ -3,8 +3,10 @@ package com.example.coursemgmt.service;
 import com.example.coursemgmt.dto.CourseDto;
 import com.example.coursemgmt.entity.Course;
 import com.example.coursemgmt.entity.CourseEnrollment;
+import com.example.coursemgmt.entity.User;
 import com.example.coursemgmt.exception.BadRequestException;
 import com.example.coursemgmt.exception.NotFoundException;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
@@ -21,7 +23,7 @@ public class EnrollmentService {
     }
 
     public List<CourseDto> getStudentCourses(Long studentId) {
-        List<CourseEnrollment> enrollments = CourseEnrollment.find("studentId", studentId).list();
+        List<CourseEnrollment> enrollments = CourseEnrollment.find("student.id", studentId).list();
         return enrollments.stream()
                 .map(e -> courseService.getCourseById(e.getCourseId()))
                 .map(CourseDto::from)
@@ -38,7 +40,7 @@ public class EnrollmentService {
         }
 
         // Check if already enrolled
-        CourseEnrollment existing = (CourseEnrollment) CourseEnrollment.find("courseId = ?1 AND studentId = ?2", courseId, studentId)
+        CourseEnrollment existing = (CourseEnrollment) CourseEnrollment.find("course.id = ?1 AND student.id = ?2", courseId, studentId)
                 .firstResultOptional()
                 .orElse(null);
 
@@ -46,10 +48,15 @@ public class EnrollmentService {
             throw new BadRequestException("Student is already enrolled in this course");
         }
 
+        Log.debug(studentId);
+
         // Create enrollment
+        User student = (User) User.findByIdOptional(studentId)
+                .orElseThrow(() -> new NotFoundException("Student not found"));
+
         CourseEnrollment enrollment = new CourseEnrollment();
-        enrollment.setCourseId(courseId);
-        enrollment.setStudentId(studentId);
+        enrollment.setCourse(course);
+        enrollment.setStudent(student);
         enrollment.persist();
 
         // Update current enrollment count
@@ -59,7 +66,7 @@ public class EnrollmentService {
 
     @Transactional
     public void unenrollStudent(Long courseId, Long studentId) {
-        CourseEnrollment enrollment = (CourseEnrollment) CourseEnrollment.find("courseId = ?1 AND studentId = ?2", courseId, studentId)
+        CourseEnrollment enrollment = (CourseEnrollment) CourseEnrollment.find("course.id = ?1 AND student.id = ?2", courseId, studentId)
                 .firstResultOptional()
                 .orElseThrow(() -> new NotFoundException("Enrollment not found"));
 
@@ -71,7 +78,7 @@ public class EnrollmentService {
     }
 
     public List<Long> getEnrolledStudents(Long courseId) {
-        return CourseEnrollment.find("courseId", courseId).list().stream()
+        return CourseEnrollment.find("course.id", courseId).list().stream()
                 .map(id -> {
                     CourseEnrollment ce = (CourseEnrollment) id;
                     return ce.getStudentId();
@@ -80,7 +87,7 @@ public class EnrollmentService {
     }
 
     public boolean isEnrolled(Long courseId, Long studentId) {
-        return CourseEnrollment.find("courseId = ?1 AND studentId = ?2", courseId, studentId)
+        return CourseEnrollment.find("course.id = ?1 AND student.id = ?2", courseId, studentId)
                 .firstResultOptional()
                 .isPresent();
     }

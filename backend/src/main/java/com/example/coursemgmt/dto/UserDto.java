@@ -20,7 +20,7 @@ public class UserDto {
             user.id,
             user.getEmail(),
             user.getFullName(),
-            user.getRole().name(),
+            user.getRole(),  // Now String, not enum
             user.getActive()
         );
     }

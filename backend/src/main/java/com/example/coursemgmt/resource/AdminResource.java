@@ -4,6 +4,7 @@ import com.example.coursemgmt.dto.CourseDto;
 import com.example.coursemgmt.dto.UserDto;
 import com.example.coursemgmt.service.AdminService;
 import com.example.coursemgmt.service.CourseService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -24,13 +25,14 @@ import java.util.Map;
 public class AdminResource {
 
     @Inject
-    private AdminService adminService;
+    AdminService adminService;
 
     @Inject
-    private CourseService courseService;
+    CourseService courseService;
 
     @GET
     @Path("/pending-courses")
+    @RolesAllowed("ADMIN")
     public Response getPendingCourses() {
         List<CourseDto> courses = courseService.getPendingCourses();
         return Response.ok(courses).build();
@@ -38,6 +40,7 @@ public class AdminResource {
 
     @POST
     @Path("/courses/{courseId}/approve")
+    @RolesAllowed("ADMIN")
     public Response approveCourse(@PathParam("courseId") Long courseId) {
         CourseDto course = courseService.approveCourse(courseId);
         return Response.ok(course).build();
@@ -45,6 +48,7 @@ public class AdminResource {
 
     @POST
     @Path("/courses/{courseId}/reject")
+    @RolesAllowed("ADMIN")
     public Response rejectCourse(@PathParam("courseId") Long courseId) {
         courseService.rejectCourse(courseId);
         return Response.noContent().build();
@@ -52,6 +56,7 @@ public class AdminResource {
 
     @GET
     @Path("/users")
+    @RolesAllowed("ADMIN")
     public Response getAllUsers() {
         List<UserDto> users = adminService.getAllUsers();
         return Response.ok(users).build();
@@ -59,6 +64,7 @@ public class AdminResource {
 
     @GET
     @Path("/users/{userId}")
+    @RolesAllowed("ADMIN")
     public Response getUser(@PathParam("userId") Long userId) {
         UserDto user = adminService.getUserById(userId);
         return Response.ok(user).build();
@@ -66,6 +72,7 @@ public class AdminResource {
 
     @POST
     @Path("/users")
+    @RolesAllowed("ADMIN")
     public Response createUser(Map<String, String> request) {
         UserDto user = adminService.createUser(
             request.get("email"),
@@ -78,6 +85,7 @@ public class AdminResource {
 
     @PUT
     @Path("/users/{userId}")
+    @RolesAllowed("ADMIN")
     public Response updateUser(@PathParam("userId") Long userId, Map<String, Object> request) {
         UserDto user = adminService.updateUser(
             userId,

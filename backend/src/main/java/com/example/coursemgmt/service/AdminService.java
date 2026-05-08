@@ -4,7 +4,9 @@ import com.example.coursemgmt.dto.UserDto;
 import com.example.coursemgmt.entity.User;
 import com.example.coursemgmt.exception.BadRequestException;
 import com.example.coursemgmt.exception.NotFoundException;
+import com.example.coursemgmt.security.PasswordEncoder;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
@@ -12,6 +14,9 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class AdminService {
+
+    @Inject
+    PasswordEncoder passwordEncoder;
 
     public List<UserDto> getAllUsers() {
         List<User> users = User.listAll();
@@ -50,16 +55,17 @@ public class AdminService {
         }
 
         // Check if user already exists
-        User existingUser = (User) User.find("email", email).firstResultOptional().orElse(null);
+        User existingUser = (User) User.find("username", email).firstResultOptional().orElse(null);
         if (existingUser != null) {
             throw new BadRequestException("User with this email already exists");
         }
 
         User user = new User();
         user.setEmail(email);
-        user.setPasswordHash(/*TODO*/);
+        user.setUsername(email);  // Use email as username
+        user.setPasswordHash(passwordEncoder.encode(password));
         user.setFullName(fullName);
-        user.setRole(userRole);
+        user.setRole(userRole.name());  // Store as String
         user.setActive(true);
 
         user.persist();
@@ -73,11 +79,12 @@ public class AdminService {
 
         if (email != null && !email.isEmpty()) {
             // Check if new email already exists for another user
-            User existing = (User) User.find("email", email).firstResultOptional().orElse(null);
+            User existing = (User) User.find("username", email).firstResultOptional().orElse(null);
             if (existing != null && !existing.id.equals(userId)) {
                 throw new BadRequestException("Email already in use");
             }
             user.setEmail(email);
+            user.setUsername(email);  // Keep username and email in sync
         }
 
         if (fullName != null && !fullName.isEmpty()) {
@@ -92,3 +99,5 @@ public class AdminService {
         return UserDto.from(user);
     }
 }
+
+

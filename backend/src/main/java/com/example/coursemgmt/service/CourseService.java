@@ -7,7 +7,10 @@ import com.example.coursemgmt.entity.CourseSchedule;
 import com.example.coursemgmt.exception.BadRequestException;
 import com.example.coursemgmt.exception.ForbiddenException;
 import com.example.coursemgmt.exception.NotFoundException;
+import com.example.coursemgmt.security.SecurityService;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
@@ -15,6 +18,9 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class CourseService {
+
+    @Inject
+    SecurityService securityService;
 
     @Transactional
     public CourseDto createCourse(CreateCourseRequest request) {
@@ -25,10 +31,13 @@ public class CourseService {
             throw new BadRequestException("Max students must be greater than 0");
         }
 
+        // Teachers create courses; courses start in IN_PLAN status until admin approves
+        Long teacherId = securityService.getUserIdOrThrow();
+
         Course course = new Course();
         course.setName(request.getName());
         course.setDescription(request.getDescription());
-        course.setTeacherId(/*todo*/);
+        course.setTeacherId(teacherId);
         course.setStatus(Course.CourseStatus.IN_PLAN);
         course.setMaxStudents(request.getMaxStudents());
         course.setCurrentEnrollment(0);
@@ -39,13 +48,12 @@ public class CourseService {
         if (request.getSchedules() != null && !request.getSchedules().isEmpty()) {
             for (var scheduleDto : request.getSchedules()) {
                 CourseSchedule schedule = new CourseSchedule();
-                schedule.setCourseId(course.id);
+                schedule.setCourse(course);
                 schedule.setDayOfWeek(scheduleDto.getDayOfWeek());
                 schedule.setStartTime(scheduleDto.getStartTime());
                 schedule.setEndTime(scheduleDto.getEndTime());
                 schedule.setLocation(scheduleDto.getLocation());
                 schedule.persist();
-                course.getSchedules().add(schedule);
             }
         }
 
@@ -56,6 +64,12 @@ public class CourseService {
     public CourseDto updateCourse(Long courseId, CreateCourseRequest request) {
         Course course = getCourseById(courseId);
 
+        // Teachers can only modify courses that are in IN_PLAN status and that they created
+        Long currentTeacherId = securityService.getUserIdOrThrow();
+        if (!course.getTeacherId().equals(currentTeacherId)) {
+            throw new ForbiddenException("You can only modify courses that you created");
+        }
+
         // Can only edit if in IN_PLAN status
         if (course.getStatus() != Course.CourseStatus.IN_PLAN) {
             throw new BadRequestException("Can only edit courses that are in IN_PLAN status");
@@ -65,18 +79,20 @@ public class CourseService {
         course.setDescription(request.getDescription());
         course.setMaxStudents(request.getMaxStudents());
 
-        // Update schedules
-        course.getSchedules().clear();
+        // Delete old schedules and add new ones
+        for (CourseSchedule schedule : course.getSchedules().stream().collect(Collectors.toList())) {
+            schedule.delete();
+        }
+
         if (request.getSchedules() != null && !request.getSchedules().isEmpty()) {
             for (var scheduleDto : request.getSchedules()) {
                 CourseSchedule schedule = new CourseSchedule();
-                schedule.setCourseId(course.id);
+                schedule.setCourse(course);
                 schedule.setDayOfWeek(scheduleDto.getDayOfWeek());
                 schedule.setStartTime(scheduleDto.getStartTime());
                 schedule.setEndTime(scheduleDto.getEndTime());
                 schedule.setLocation(scheduleDto.getLocation());
                 schedule.persist();
-                course.getSchedules().add(schedule);
             }
         }
 
@@ -84,6 +100,7 @@ public class CourseService {
         return CourseDto.from(course);
     }
 
+    @Transactional
     public CourseDto getCourseDto(Long courseId) {
         Course course = getCourseById(courseId);
         return CourseDto.from(course);
@@ -94,14 +111,16 @@ public class CourseService {
                 .orElseThrow(() -> new NotFoundException("Course not found"));
     }
 
+    @Transactional
     public List<CourseDto> getAvailableCourses() {
-        List<Course> courses = Course.find("status", Course.CourseStatus.APPROVED).list();
-        return courses.stream()
-                .filter(c -> !c.isFull())
+        List<Course> courseList = Course.list("status", Course.CourseStatus.APPROVED);
+        Log.debug("Found " + courseList.size() + " approved courses");
+        return courseList.stream()
                 .map(CourseDto::from)
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public List<CourseDto> getAllCourses() {
         List<Course> courses = Course.listAll();
         return courses.stream()
@@ -109,6 +128,7 @@ public class CourseService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public List<CourseDto> getTeacherCourses(Long teacherId) {
         List<Course> courses = Course.find("teacherId", teacherId).list();
         return courses.stream()
@@ -116,6 +136,7 @@ public class CourseService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public List<CourseDto> getPendingCourses() {
         List<Course> courses = Course.find("status", Course.CourseStatus.IN_PLAN).list();
         return courses.stream()
@@ -126,6 +147,12 @@ public class CourseService {
     @Transactional
     public void deleteCourse(Long courseId) {
         Course course = getCourseById(courseId);
+
+        // Teachers can only delete courses they created
+        Long currentTeacherId = securityService.getUserIdOrThrow();
+        if (!course.getTeacherId().equals(currentTeacherId)) {
+            throw new ForbiddenException("You can only delete courses that you created");
+        }
 
         // Cannot delete if there are enrollments
         if (course.getCurrentEnrollment() > 0) {
@@ -143,8 +170,9 @@ public class CourseService {
             throw new BadRequestException("Can only approve courses in IN_PLAN status");
         }
 
+        Long adminId = securityService.getUserIdOrThrow();
         course.setStatus(Course.CourseStatus.APPROVED);
-        course.setApprovedBy(/*todo*/);
+        course.setApprovedBy(adminId);
         course.setApprovedAt(java.time.LocalDateTime.now());
         course.persist();
 
@@ -163,3 +191,5 @@ public class CourseService {
         course.persist();
     }
 }
+
+

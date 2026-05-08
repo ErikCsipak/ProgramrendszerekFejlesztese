@@ -17,17 +17,33 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CourseEnrollment extends PanacheEntity {
 
-    @Column(name = "course_id", nullable = false)
-    private Long courseId;
+    @ManyToOne(optional = false)
+    @jakarta.persistence.JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
-    @Column(name = "student_id", nullable = false)
-    private Long studentId;
+    @ManyToOne(optional = false)
+    @jakarta.persistence.JoinColumn(name = "student_id", nullable = false)
+    private User student;
+
+    @Column(name = "course_id", insertable = false, updatable = false)
+    private Long courseIdValue;
+
+    @Column(name = "student_id", insertable = false, updatable = false)
+    private Long studentIdValue;
 
     @Column(name = "enrolled_at")
     private LocalDateTime enrolledAt;
 
     @Column(name = "grade")
     private String grade;
+
+    public Long getCourseId() {
+        return courseIdValue != null ? courseIdValue : (course != null ? course.id : null);
+    }
+
+    public Long getStudentId() {
+        return studentIdValue != null ? studentIdValue : (student != null ? student.id : null);
+    }
 
     @PrePersist
     public void prePersist() {

@@ -11,21 +11,18 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@EqualsAndHashCode(callSuper = true)
-@Entity
-@Table(name = "course")
-@Data
+@Getter // Instead of @Data
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "course")
 public class Course extends PanacheEntity {
 
     @Column(nullable = false)
@@ -59,10 +56,10 @@ public class Course extends PanacheEntity {
     @Column(name = "approved_by")
     private Long approvedBy;
 
-    @OneToMany(mappedBy = "courseId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<CourseSchedule> schedules = new HashSet<>();
 
-    @OneToMany(mappedBy = "courseId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CourseEnrollment> enrollments = new HashSet<>();
 
     @PrePersist
@@ -88,5 +85,18 @@ public class Course extends PanacheEntity {
         IN_PLAN,
         APPROVED,
         ARCHIVED
+    }
+
+    // Manually override equals/hashCode to use ONLY the ID
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Course other)) return false;
+        return id != null && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

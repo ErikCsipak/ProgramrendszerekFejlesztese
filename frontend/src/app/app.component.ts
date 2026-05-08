@@ -2,16 +2,16 @@ import { Component } from '@angular/core';
 
 import { RouterOutlet } from '@angular/router';
 import { ToastComponent } from './shared/toast/toast.component';
-import { SideNavbarComponent } from './shared/side-navbar.component';
+import { TopNavbarComponent } from './shared/top-navbar.component';
 import { AuthService } from './auth/auth.service';
 
 @Component({
     selector: 'app-root',
   standalone: true,
-    imports: [RouterOutlet, ToastComponent, SideNavbarComponent],
+    imports: [RouterOutlet, ToastComponent, TopNavbarComponent],
     template: `
-    <app-side-navbar (collapsedChange)="onSidebarCollapsed($event)"></app-side-navbar>
-    <div class="container" [style.margin-left.px]="authService.isAuthenticated() && !sidebarCollapsed ? 240 : 0">
+    <app-top-navbar></app-top-navbar>
+    <div class="container" [style.marginTop.px]="authService.isAuthenticated() ? 64 : 0">
       <router-outlet></router-outlet>
     </div>
     <app-toast></app-toast>
@@ -21,7 +21,8 @@ import { AuthService } from './auth/auth.service';
       max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
-      /* margin-left is set dynamically so the sidebar doesn't reserve space when not visible */
+      /* push content below the fixed top navbar */
+      margin-top: 64px;
     }
     @media (max-width: 767px) {
       .container { margin-left: 0 !important; }

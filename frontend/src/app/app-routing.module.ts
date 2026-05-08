@@ -7,6 +7,7 @@ import { LoginComponent } from './auth/login.component';
 import { RegisterComponent } from './auth/register.component';
 import { StudentDashboardComponent } from './student/student-dashboard.component';
 import { TeacherDashboardComponent } from './teacher/teacher-dashboard.component';
+import { TeacherCourseEditComponent } from './teacher/teacher-course-edit.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard.component';
 import { CourseDetailComponent } from './courses/course-detail.component';
 
@@ -24,6 +25,11 @@ export const routes: Routes = [
   {
     path: 'teacher',
     component: TeacherDashboardComponent,
+    canActivate: [authGuard, teacherGuard]
+  },
+  {
+    path: 'teacher/courses/:id/edit',
+    component: TeacherCourseEditComponent,
     canActivate: [authGuard, teacherGuard]
   },
 

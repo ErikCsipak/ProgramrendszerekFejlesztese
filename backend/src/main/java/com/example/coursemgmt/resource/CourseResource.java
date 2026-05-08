@@ -2,7 +2,10 @@ package com.example.coursemgmt.resource;
 
 import com.example.coursemgmt.dto.CourseDto;
 import com.example.coursemgmt.dto.CreateCourseRequest;
+import com.example.coursemgmt.security.SecurityService;
 import com.example.coursemgmt.service.CourseService;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -16,10 +19,14 @@ import java.util.List;
 public class CourseResource {
 
     @Inject
-    private CourseService courseService;
+    CourseService courseService;
+
+    @Inject
+    SecurityService securityService;
 
     @GET
     @Path("/available")
+    @PermitAll
     public Response getAvailableCourses() {
         List<CourseDto> courses = courseService.getAvailableCourses();
         return Response.ok(courses).build();
@@ -27,6 +34,7 @@ public class CourseResource {
 
     @GET
     @Path("/all")
+    @PermitAll
     public Response getAllCourses() {
         List<CourseDto> courses = courseService.getAllCourses();
         return Response.ok(courses).build();
@@ -34,19 +42,23 @@ public class CourseResource {
 
     @GET
     @Path("/mine")
-    public Response getTeacherCourses(@QueryParam("teacherId") Long teacherId) {
+    @RolesAllowed({"TEACHER", "ADMIN"})
+    public Response getTeacherCourses() {
+        Long teacherId = securityService.getUserIdOrThrow();
         List<CourseDto> courses = courseService.getTeacherCourses(teacherId);
         return Response.ok(courses).build();
     }
 
     @GET
     @Path("/{id}")
+    @PermitAll
     public Response getCourse(@PathParam("id") Long courseId) {
         CourseDto course = courseService.getCourseDto(courseId);
         return Response.ok(course).build();
     }
 
     @POST
+    @RolesAllowed({"TEACHER", "ADMIN"})
     public Response createCourse(CreateCourseRequest request) {
         CourseDto course = courseService.createCourse(request);
         return Response.status(Response.Status.CREATED).entity(course).build();
@@ -54,6 +66,7 @@ public class CourseResource {
 
     @PUT
     @Path("/{id}")
+    @RolesAllowed("TEACHER")
     public Response updateCourse(@PathParam("id") Long courseId, CreateCourseRequest request) {
         CourseDto course = courseService.updateCourse(courseId, request);
         return Response.ok(course).build();
@@ -61,6 +74,7 @@ public class CourseResource {
 
     @DELETE
     @Path("/{id}")
+    @RolesAllowed("TEACHER")
     public Response deleteCourse(@PathParam("id") Long courseId) {
         courseService.deleteCourse(courseId);
         return Response.noContent().build();

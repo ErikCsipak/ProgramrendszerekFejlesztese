@@ -68,7 +68,28 @@
       <artifactId>quarkus-flyway</artifactId>
     </dependency>
 
-    <!-- (Authentication & authorization removed) -->
+    <!-- Security & JWT -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-security</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-security-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-jwt-build</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-jwt</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>de.mkammerer</groupId>
+      <artifactId>argon2-jvm</artifactId>
+      <version>2.11</version>
+    </dependency>
 
     <!-- Lombok -->
     <dependency>
