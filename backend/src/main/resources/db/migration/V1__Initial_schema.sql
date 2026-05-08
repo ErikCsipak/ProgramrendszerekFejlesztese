@@ -48,19 +48,3 @@ CREATE INDEX idx_course_status ON course(status);
 CREATE INDEX idx_course_schedule_course_id ON course_schedule(course_id);
 CREATE INDEX idx_course_enrollment_course_id ON course_enrollment(course_id);
 CREATE INDEX idx_course_enrollment_student_id ON course_enrollment(student_id);
-
--- Course sequence
-CREATE SEQUENCE IF NOT EXISTS course_SEQ START WITH 1 INCREMENT BY 50;
-SELECT setval('course_SEQ', COALESCE((SELECT MAX(id) FROM course), 0) + 1, false);
-
--- Course schedule sequence
-CREATE SEQUENCE IF NOT EXISTS course_schedule_SEQ START WITH 1 INCREMENT BY 50;
-SELECT setval('course_schedule_SEQ', COALESCE((SELECT MAX(id) FROM course_schedule), 0) + 1, false);
-
--- Course enrollment sequence
-CREATE SEQUENCE IF NOT EXISTS course_enrollment_SEQ START WITH 1 INCREMENT BY 50;
-SELECT setval('course_enrollment_SEQ', COALESCE((SELECT MAX(id) FROM course_enrollment), 0) + 1, false);
-
--- User sequence (table name is quoted in earlier migrations)
-CREATE SEQUENCE IF NOT EXISTS user_SEQ START WITH 1 INCREMENT BY 50;
-SELECT setval('user_SEQ', COALESCE((SELECT MAX(id) FROM "user"), 0) + 1, false);
