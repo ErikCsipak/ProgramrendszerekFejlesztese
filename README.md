@@ -57,14 +57,14 @@ docker-compose up --build
 This will:
 - Create and start PostgreSQL database on port 5432
 - Build and start Quarkus backend on port 8082
-- Build and start Angular frontend on port 80 (served via Nginx)
+- Build and start Angular frontend on port 8080 (served via Nginx)
 - Run database migrations automatically
 
 ### 3. Access the Application
 
-- **Frontend**: http://localhost
-- **Backend API**: http://localhost:8080/api
-- **Database**: localhost:5432 (credential: coursemgmt/coursemgmt123)
+- **Frontend**: http://localhost:8080
+- **Backend API**: http://localhost:8082/api
+- **Database**: localhost:5432
 
 ## Local Development Setup
 
@@ -89,8 +89,8 @@ The backend development environment expects a PostgreSQL instance reachable at l
 # from repository root (PowerShell)
 docker run -d --name coursemgmt-postgres `
   -e POSTGRES_DB=coursemgmt `
-  -e POSTGRES_USER=coursemgmt `
-  -e POSTGRES_PASSWORD=coursemgmt123 `
+  -e POSTGRES_USER=[USER] `
+  -e POSTGRES_PASSWORD=[PASSWORD] `
   -p 5432:5432 `
   -v coursemgmt_pgdata:/var/lib/postgresql/data `
   postgres:15
@@ -113,14 +113,14 @@ docker exec -it coursemgmt-postgres psql -U coursemgmt -d coursemgmt
 
 3) Connect your locally running backend to the Docker Postgres
 
-The default `application.properties` already points to `jdbc:postgresql://localhost:5432/coursemgmt` with username `coursemgmt` and password `coursemgmt123`. If you change the container port or credentials, you can override Quarkus properties via environment variables before starting the backend.
+The default `application.properties` already points to `jdbc:postgresql://localhost:5432/coursemgmt`. If you change the container port or credentials, you can override Quarkus properties via environment variables before starting the backend.
 
 PowerShell example (set environment variables for the current session then run Quarkus dev mode):
 
 ```powershell
 $env:QUARKUS_DATASOURCE_JDBC_URL = "jdbc:postgresql://localhost:5432/coursemgmt"
-$env:QUARKUS_DATASOURCE_USERNAME = "coursemgmt"
-$env:QUARKUS_DATASOURCE_PASSWORD = "coursemgmt123"
+$env:QUARKUS_DATASOURCE_USERNAME = "[USERNAME]"
+$env:QUARKUS_DATASOURCE_PASSWORD = "[PASSWORD]"
 
 # start the backend in dev mode (hot reload)
 cd backend
@@ -141,15 +141,10 @@ Use these connection settings in your client:
 - Host: localhost
 - Port: 5432 (or the host port you mapped)
 - Database: coursemgmt
-- User: coursemgmt
-- Password: coursemgmt123
+- User: [USER]
+- Password: [PASSWORD]
 
-5) Common issues
-- If Flyway migrations fail on backend start, check backend logs and the `flyway_schema_history` table in Postgres for applied/failed migrations.
-- If you get authentication failures from DBeaver while the container accepts connections internally, ensure you're connecting to the same Postgres instance (localhost:5432). On Docker Desktop with WSL backend `host.docker.internal` may behave differently; prefer `localhost` for host-to-container port mappings.
-- If you changed the host port (e.g. bound to 5433), update `QUARKUS_DATASOURCE_JDBC_URL` accordingly.
-
-The backend will start on http://localhost:8080 and automatically run Flyway migrations (if `quarkus.flyway.migrate-at-start=true`).
+The backend will start on http://localhost:8082 and automatically run Flyway migrations (if `quarkus.flyway.migrate-at-start=true`).
 
 ### Frontend Setup
 
@@ -185,11 +180,6 @@ The frontend will be available at http://localhost:4200
 POST /api/auth/login
 Content-Type: application/json
 
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-
 Response:
 {
   "token": "eyJhbGciOiJIUzI1NiIs...",
@@ -207,12 +197,6 @@ Response:
 ```
 POST /api/auth/register
 Content-Type: application/json
-
-{
-  "email": "student@example.com",
-  "password": "password123",
-  "fullName": "Jane Student"
-}
 ```
 
 #### Validate Token
@@ -348,7 +332,6 @@ Content-Type: application/json
 
 {
   "email": "teacher@example.com",
-  "password": "password123",
   "fullName": "John Teacher",
   "role": "TEACHER"  // or "ADMIN"
 }
@@ -420,30 +403,6 @@ Content-Type: application/json
 4. **Verify Capacity**:
    - Multiple students join until course is full
    - Verify full courses don't appear in available list
-
-## Troubleshooting
-
-### Backend won't start
-```bash
-# Check PostgreSQL is running
-docker ps | grep postgres
-
-# Check logs
-docker-compose logs backend
-
-# Verify database connection
-psql -h localhost -U coursemgmt -d coursemgmt
-```
-
-### Frontend can't connect to API
-- Verify backend is running: `curl http://localhost:8080/health`
-- Check browser console for CORS errors
-- Verify nginx.conf proxy settings
-
-### Database migrations fail
-- Check migration files in `backend/src/main/resources/db/migration/`
-- Verify PostgreSQL is running
-- Check database logs: `docker-compose logs postgres`
 
 ## Development Workflow
 
@@ -528,33 +487,7 @@ ProgramrendszerekFejlesztese/
 ├── docker-compose.yml
 └── README.md
 ```
-
-## Future Enhancements
-
-- Course grading system
-- Course reviews and ratings
-- Email notifications
-- Real-time notifications (WebSockets)
-- Advanced scheduling (recurring patterns)
-- Document uploads for courses
-- Student progress tracking
-- Attendance management
-- Kubernetes deployment manifests
-- CI/CD pipeline (GitHub Actions)
-- Comprehensive test coverage
-
 ---
 
 **Created**: 2024
 **Stack**: Quarkus + Angular + PostgreSQL + Docker
-
-# build and start all services
-docker-compose up --build
-
-Frontend: open http://localhost:4200
-Backend API: http://localhost:8080/api (or health at http://localhost:8080/health)
-Database: connect with host=localhost, port=5432, db=coursemgmt, user=coursemgmt, password=coursemgmt123
-
-Test users:
-admin@example.com / test1234 
-teacher@example.com / test1234
